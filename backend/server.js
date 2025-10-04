@@ -10,7 +10,16 @@ const PORT = process.env.PORT || 3001;
 // 安全中间件
 app.use(helmet());
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002'],
+  origin: [
+    'http://localhost:3000', 
+    'http://localhost:3001', 
+    'http://localhost:3002',
+    // Vercel部署的前端域名
+    /^https:\/\/.*\.vercel\.app$/,
+    /^https:\/\/.*\.vercel\.dev$/,
+    // 自定义域名
+    process.env.FRONTEND_URL
+  ].filter(Boolean),
   credentials: true
 }));
 
