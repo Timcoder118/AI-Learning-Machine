@@ -1,0 +1,38 @@
+{
+  "name": "ai-knowledge-aggregator-frontend",
+  "version": "1.0.0",
+  "description": "AI Knowledge Aggregator Platform - Frontend Only for Vercel",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "vercel-build": "vite build",
+    "preview": "vite preview",
+    "start": "vite preview"
+  },
+  "keywords": ["ai", "knowledge", "aggregator", "frontend"],
+  "author": "AI Knowledge Aggregator",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.8.1",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.55.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.3.6",
+    "typescript": "^5.2.2",
+    "vite": "^4.5.0"
+  }
+}
