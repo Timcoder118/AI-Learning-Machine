@@ -3,7 +3,7 @@ services:
     name: ai-knowledge-aggregator-backend
     env: node
     plan: free
-    buildCommand: npm install
+    buildCommand: npm run install
     startCommand: npm start
     envVars:
       - key: NODE_ENV

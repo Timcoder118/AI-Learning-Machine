@@ -1,14 +1,13 @@
 {
   "name": "ai-knowledge-aggregator",
   "version": "1.0.0",
-  "description": "AI Knowledge Aggregator Platform",
+  "description": "AI Knowledge Aggregator Platform - Backend Only",
   "main": "backend/server.js",
   "scripts": {
     "start": "cd backend && node server.js",
-    "build": "npm run build --prefix .",
-    "dev": "npm run dev --prefix ."
+    "install": "cd backend && npm install"
   },
-  "keywords": ["ai", "knowledge", "aggregator"],
+  "keywords": ["ai", "knowledge", "aggregator", "backend"],
   "author": "AI Knowledge Aggregator",
   "license": "MIT",
   "engines": {
