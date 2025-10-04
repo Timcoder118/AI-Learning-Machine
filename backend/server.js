@@ -58,6 +58,23 @@ app.use('/api/creators', creatorRoutes);
 app.use('/api/scrape', scrapeRoutes);
 app.use('/api/recommendation', recommendationRoutes);
 
+// 根路径处理
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'success',
+    message: 'AI知识聚合平台后端服务正在运行',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      creators: '/api/creators',
+      content: '/api/content',
+      scrape: '/api/scrape',
+      recommendation: '/api/recommendation'
+    }
+  });
+});
+
 // 健康检查
 app.get('/api/health', (req, res) => {
   res.json({ 

@@ -8,7 +8,7 @@ const getApiBaseUrl = (): string => {
   // 在生产环境中，从环境变量获取API URL
   if (import.meta.env.PROD) {
     // Vercel环境变量中的后端URL
-    return import.meta.env.VITE_API_URL || 'https://your-backend-url.onrender.com';
+    return import.meta.env.VITE_API_URL || 'https://ai-knowledge-aggregator-backend.onrender.com';
   }
   
   // 开发环境使用本地后端
