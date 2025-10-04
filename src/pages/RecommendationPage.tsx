@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui';
 import { Button } from '@/components/ui';
+import { API_ENDPOINTS } from '@/config/api';
 
 interface Content {
   id: number;
@@ -72,7 +73,7 @@ export const RecommendationPage: React.FC = () => {
       console.log('正在获取推荐内容...');
       
       // 调用后端推荐API
-      const response = await fetch('http://localhost:3001/api/recommendation?limit=20');
+      const response = await fetch(`${API_ENDPOINTS.RECOMMENDATION}?limit=20`);
       console.log('响应状态:', response.status);
       
       if (!response.ok) {
@@ -149,7 +150,7 @@ export const RecommendationPage: React.FC = () => {
   // 标记为已读
   const markAsRead = async (id: number) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/content/${id}/read`, {
+      const response = await fetch(`${API_ENDPOINTS.CONTENT}/${id}/read`, {
         method: 'PATCH',
       });
 
@@ -170,7 +171,7 @@ export const RecommendationPage: React.FC = () => {
   // 切换收藏状态
   const toggleBookmark = async (id: number) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/content/${id}/bookmark`, {
+      const response = await fetch(`${API_ENDPOINTS.CONTENT}/${id}/bookmark`, {
         method: 'PATCH',
       });
 
@@ -191,7 +192,7 @@ export const RecommendationPage: React.FC = () => {
   // 记录用户行为
   const recordUserBehavior = async (contentId: number, actionType: string, actionValue: number = 1) => {
     try {
-      await fetch('http://localhost:3001/api/recommendation/behavior', {
+      await fetch(`${API_ENDPOINTS.RECOMMENDATION}/behavior`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -226,7 +227,7 @@ export const RecommendationPage: React.FC = () => {
   // 保存用户偏好
   const saveUserPreferences = async () => {
     try {
-      await fetch('http://localhost:3001/api/recommendation/preferences', {
+      await fetch(`${API_ENDPOINTS.RECOMMENDATION}/preferences`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

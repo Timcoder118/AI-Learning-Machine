@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui';
 import { Button } from '@/components/ui';
+import { API_ENDPOINTS } from '@/config/api';
 
 interface Content {
   id: number;
@@ -47,7 +48,7 @@ export const ContentPage: React.FC = () => {
     try {
       setLoading(true);
       console.log('正在获取内容列表...');
-      const response = await fetch('http://localhost:3001/api/content');
+      const response = await fetch(API_ENDPOINTS.CONTENT);
       console.log('响应状态:', response.status);
       
       if (!response.ok) {
@@ -88,7 +89,7 @@ export const ContentPage: React.FC = () => {
       setScraping(true);
       console.log('正在触发内容抓取...');
       
-      const response = await fetch('http://localhost:3001/api/scrape/trigger', {
+      const response = await fetch(`${API_ENDPOINTS.SCRAPE}/trigger`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -124,7 +125,7 @@ export const ContentPage: React.FC = () => {
   // 标记为已读
   const markAsRead = async (id: number) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/content/${id}/read`, {
+      const response = await fetch(`${API_ENDPOINTS.CONTENT}/${id}/read`, {
         method: 'PATCH',
       });
 
@@ -143,7 +144,7 @@ export const ContentPage: React.FC = () => {
   // 切换收藏状态
   const toggleBookmark = async (id: number) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/content/${id}/bookmark`, {
+      const response = await fetch(`${API_ENDPOINTS.CONTENT}/${id}/bookmark`, {
         method: 'PATCH',
       });
 

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui';
 import { Button } from '@/components/ui';
 import { Input } from '@/components/ui';
+import { API_ENDPOINTS } from '@/config/api';
 
 interface Creator {
   id: number;
@@ -39,7 +40,7 @@ export const CreatorsPage: React.FC = () => {
     try {
       setLoading(true);
       console.log('正在获取博主列表...');
-      const response = await fetch('http://localhost:3001/api/creators');
+      const response = await fetch(API_ENDPOINTS.CREATORS);
       console.log('响应状态:', response.status);
       
       if (!response.ok) {
@@ -75,7 +76,7 @@ export const CreatorsPage: React.FC = () => {
       setLoading(true);
       console.log('正在添加博主:', newCreator);
       
-      const response = await fetch('http://localhost:3001/api/creators', {
+      const response = await fetch(API_ENDPOINTS.CREATORS, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
