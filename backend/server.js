@@ -81,9 +81,9 @@ app.use('*', (req, res) => {
   res.status(404).json({ error: '接口不存在' });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 后端服务启动成功！`);
-  console.log(`📍 服务地址: http://localhost:${PORT}`);
+  console.log(`📍 服务地址: http://0.0.0.0:${PORT}`);
   console.log(`🔧 环境: ${process.env.NODE_ENV || 'development'}`);
   console.log(`⏰ 启动时间: ${new Date().toLocaleString('zh-CN')}`);
 });
