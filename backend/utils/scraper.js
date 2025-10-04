@@ -1,6 +1,5 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
-const puppeteer = require('puppeteer');
 const config = require('../config');
 
 class BaseScraper {
@@ -44,54 +43,11 @@ class BaseScraper {
     throw lastError;
   }
 
-  // 使用Puppeteer抓取动态内容
+  // 使用Puppeteer抓取动态内容 - 已移除Puppeteer依赖
   async scrapeWithPuppeteer(url, options = {}) {
-    let browser;
-    
-    try {
-      browser = await puppeteer.launch({
-        headless: 'new',
-        args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-accelerated-2d-canvas',
-          '--no-first-run',
-          '--no-zygote',
-          '--disable-gpu'
-        ]
-      });
-      
-      const page = await browser.newPage();
-      await page.setUserAgent(this.headers['User-Agent']);
-      await page.setViewport({ width: 1920, height: 1080 });
-      
-      // 设置请求拦截，优化性能
-      await page.setRequestInterception(true);
-      page.on('request', (req) => {
-        const resourceType = req.resourceType();
-        if (['image', 'stylesheet', 'font', 'media'].includes(resourceType)) {
-          req.abort();
-        } else {
-          req.continue();
-        }
-      });
-      
-      await page.goto(url, { 
-        waitUntil: 'networkidle2',
-        timeout: 30000 
-      });
-      
-      const content = await page.content();
-      await browser.close();
-      
-      return cheerio.load(content);
-    } catch (error) {
-      if (browser) {
-        await browser.close();
-      }
-      throw error;
-    }
+    // 临时使用普通HTTP请求代替Puppeteer
+    console.log(`⚠️  Puppeteer已移除，使用普通HTTP请求代替: ${url}`);
+    return await this.scrape(url);
   }
 
   // 内容过滤
