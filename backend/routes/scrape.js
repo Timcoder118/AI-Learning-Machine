@@ -535,6 +535,37 @@ router.post('/test/weibo', async (req, res) => {
   }
 });
 
+// 测试YouTube抓取
+router.post('/test/youtube', async (req, res) => {
+  try {
+    const { channelId } = req.body;
+    
+    if (!channelId) {
+      return res.status(400).json({ success: false, error: '请提供YouTube频道ID' });
+    }
+    
+    console.log(`🧪 测试YouTube抓取，频道ID: ${channelId}`);
+    
+    const scraper = new YouTubeScraper();
+    const content = await scraper.getChannelVideos(channelId, 5);
+    
+    console.log(`✅ 测试抓取完成，获取到 ${content.length} 条内容`);
+    
+    res.json({ 
+      success: true, 
+      message: `测试抓取完成，获取到 ${content.length} 条内容`,
+      data: {
+        channelId,
+        contentCount: content.length,
+        content: content.slice(0, 3) // 只返回前3条用于预览
+      }
+    });
+  } catch (error) {
+    console.error('测试YouTube抓取失败:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // 测试微信公众号抓取
 router.post('/test/wechat', async (req, res) => {
   try {

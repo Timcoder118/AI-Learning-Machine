@@ -51,47 +51,100 @@ class WeiboScraper extends BaseScraper {
     try {
       console.log(`🔍 正在抓取微博用户 ${userId} 的内容...`);
       
-      // 尝试使用微博移动端API
-      const apiUrl = `https://m.weibo.cn/api/container/getIndex?type=uid&value=${userId}&containerid=107603${userId}`;
-      
-      const response = await this.request(apiUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1',
-          'Referer': `https://m.weibo.cn/u/${userId}`,
-          'Accept': 'application/json, text/plain, */*',
-          'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        }
-      });
-      
-      console.log('📊 微博API响应状态:', response.status);
-      
-      if (response.data && response.data.data && response.data.data.cards) {
-        const cards = response.data.data.cards;
-        const posts = [];
+      // 方法1：尝试使用微博移动端API
+      try {
+        const apiUrl = `https://m.weibo.cn/api/container/getIndex?type=uid&value=${userId}&containerid=107603${userId}`;
         
-        for (const card of cards.slice(0, limit)) {
-          if (card.mblog) {
-            const mblog = card.mblog;
-            const post = this.formatWeiboPost(mblog, userId);
-            if (post && this.filterContent(post)) {
+        const response = await this.request(apiUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+            'Referer': `https://m.weibo.cn/u/${userId}`,
+            'Accept': 'application/json, text/plain, */*',
+            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        });
+        
+        console.log('📊 微博API响应状态:', response.status);
+        
+        if (response.data && response.data.data && response.data.data.cards) {
+          const cards = response.data.data.cards;
+          const posts = [];
+          
+          for (const card of cards.slice(0, limit)) {
+            if (card.mblog) {
+              const mblog = card.mblog;
+              const post = this.formatWeiboPost(mblog, userId);
+              if (post && this.filterContent(post)) {
+                posts.push(post);
+              }
+            }
+          }
+          
+          console.log(`✅ 成功获取 ${posts.length} 条微博`);
+          return posts;
+        }
+      } catch (apiError) {
+        console.log('⚠️ 微博API调用失败，尝试网页抓取:', apiError.message);
+      }
+      
+      // 方法2：使用网页抓取作为备选
+      try {
+        const webUrl = `https://m.weibo.cn/u/${userId}`;
+        const $ = await this.scrapeWithPuppeteer(webUrl);
+        
+        const posts = [];
+        $('.weibo-item').slice(0, limit).each((index, element) => {
+          const $item = $(element);
+          const text = $item.find('.weibo-text').text().trim();
+          const time = $item.find('.time').text().trim();
+          const link = $item.find('a').first().attr('href');
+          
+          if (text && text.length > 10) {
+            const post = {
+              id: this.generateId('weibo', link || `mock_${userId}_${index}`),
+              title: this.cleanText(text.substring(0, 100)),
+              description: this.cleanText(text),
+              url: link ? (link.startsWith('http') ? link : `https://m.weibo.cn${link}`) : `#weibo_${userId}_${index}`,
+              thumbnail: '',
+              platform: 'weibo',
+              creatorId: userId,
+              creatorName: `微博用户${userId}`,
+              contentType: 'post',
+              publishTime: this.parseTime(time) || new Date(),
+              readTime: Math.ceil(text.length / 500),
+              viewCount: 0,
+              tags: this.extractTags(text),
+              isRead: false,
+              isBookmarked: false,
+              isRecommended: false,
+              priority: this.calculatePriority(text),
+              summary: this.generateSummary(text)
+            };
+            
+            if (this.filterContent(post)) {
               posts.push(post);
             }
           }
-        }
+        });
         
-        console.log(`✅ 成功获取 ${posts.length} 条微博`);
-        return posts;
+        if (posts.length > 0) {
+          console.log(`✅ 通过网页抓取获取 ${posts.length} 条微博`);
+          return posts;
+        }
+      } catch (webError) {
+        console.log('⚠️ 网页抓取也失败:', webError.message);
       }
       
-      console.log('⚠️ API返回异常，使用模拟数据');
-      return this.generateMockWeiboPosts(userId, limit);
+      console.log('⚠️ 所有抓取方法都失败');
+      return [];
       
     } catch (error) {
       console.error('❌ 获取微博内容失败:', error.message);
-      console.log('🔄 回退到模拟数据');
-      return this.generateMockWeiboPosts(userId, limit);
+      return [];
     }
   }
 
@@ -124,49 +177,6 @@ class WeiboScraper extends BaseScraper {
     }
   }
 
-  // 生成模拟微博数据
-  generateMockWeiboPosts(userId, limit) {
-    const mockPosts = [];
-    const postTitles = [
-      'AI技术正在改变我们的生活方式',
-      '机器学习算法在数据分析中的应用',
-      '深度学习框架PyTorch实战教程',
-      'ChatGPT-4在编程辅助中的新突破',
-      '计算机视觉技术在医疗领域的应用',
-      '自然语言处理NLP技术发展趋势',
-      'AI大模型训练与优化经验分享',
-      '人工智能在金融科技中的创新应用',
-      '数据科学家的Python编程技巧',
-      'AI创业公司的技术选型建议'
-    ];
-
-    for (let i = 0; i < Math.min(limit, postTitles.length); i++) {
-      const post = {
-        id: this.generateId('weibo', `https://m.weibo.cn/status/mock_${i}`),
-        title: postTitles[i],
-        description: `这是来自微博用户 ${userId} 的AI相关内容：${postTitles[i]}。这里包含了丰富的技术见解和实践经验，值得学习和分享。`,
-        url: `https://m.weibo.cn/status/mock_${i}`,
-        thumbnail: `https://picsum.photos/400/300?random=${i}`,
-        platform: 'weibo',
-        creatorId: userId,
-        creatorName: `微博用户${userId}`,
-        contentType: 'post',
-        publishTime: new Date(Date.now() - Math.random() * 86400 * 7 * 1000),
-        readTime: Math.floor(Math.random() * 3) + 1,
-        viewCount: Math.floor(Math.random() * 10000) + 100,
-        tags: this.extractTags(postTitles[i]),
-        isRead: false,
-        isBookmarked: false,
-        isRecommended: false,
-        priority: this.calculatePriority(postTitles[i]),
-        summary: this.generateSummary(postTitles[i])
-      };
-      
-      mockPosts.push(post);
-    }
-
-    return mockPosts;
-  }
 
   // 搜索相关内容
   async searchContent(keyword, limit = 20) {
@@ -297,6 +307,42 @@ class WeiboScraper extends BaseScraper {
     if (text.length <= 100) return text;
     
     return text.substring(0, 100) + '...';
+  }
+
+  // 解析时间
+  parseTime(timeStr) {
+    if (!timeStr) return new Date();
+    
+    try {
+      // 处理相对时间，如 "2小时前", "昨天", "3天前"
+      const now = new Date();
+      
+      if (timeStr.includes('分钟前')) {
+        const minutes = parseInt(timeStr.replace('分钟前', ''));
+        return new Date(now.getTime() - minutes * 60 * 1000);
+      } else if (timeStr.includes('小时前')) {
+        const hours = parseInt(timeStr.replace('小时前', ''));
+        return new Date(now.getTime() - hours * 60 * 60 * 1000);
+      } else if (timeStr.includes('天前')) {
+        const days = parseInt(timeStr.replace('天前', ''));
+        return new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+      } else if (timeStr === '昨天') {
+        return new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      } else if (timeStr.includes('月')) {
+        // 处理 "12月20日" 格式
+        const match = timeStr.match(/(\d+)月(\d+)日/);
+        if (match) {
+          const month = parseInt(match[1]) - 1; // JavaScript月份从0开始
+          const day = parseInt(match[2]);
+          return new Date(now.getFullYear(), month, day);
+        }
+      }
+      
+      return new Date(timeStr);
+    } catch (error) {
+      console.error('解析时间失败:', error);
+      return new Date();
+    }
   }
 }
 

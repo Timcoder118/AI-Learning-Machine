@@ -190,39 +190,73 @@ export const ContentPage: React.FC = () => {
     }
   };
 
-  // 测试微信公众号抓取
-  const handleTestWeChat = async () => {
-    const accountName = prompt('请输入微信公众号名称（如：机器之心）:');
-    if (!accountName) return;
-    
-    try {
-      setScraping(true);
-      console.log(`测试微信公众号抓取，公众号名称: ${accountName}`);
-      
-      const response = await fetch(`${API_ENDPOINTS.API_BASE}/api/scrape/test/wechat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ accountName }),
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        console.log('测试抓取成功:', result);
-        alert(`测试抓取完成！获取到 ${result.data.contentCount} 条内容\n\n预览内容:\n${result.data.content.map((item: any) => `• ${item.title}`).join('\n')}`);
-      } else {
-        console.error('测试抓取失败:', result.error);
-        alert(`测试抓取失败: ${result.error}`);
-      }
-    } catch (error) {
-      console.error('测试微信公众号抓取失败:', error);
-      alert(`测试抓取失败: ${error}`);
-    } finally {
-      setScraping(false);
-    }
-  };
+       // 测试YouTube抓取
+       const handleTestYouTube = async () => {
+         const channelId = prompt('请输入YouTube频道ID（如：UCXZCJLdBC09xxGZ6gcdrc6A）:');
+         if (!channelId) return;
+         
+         try {
+           setScraping(true);
+           console.log(`测试YouTube抓取，频道ID: ${channelId}`);
+           
+           const response = await fetch(`${API_ENDPOINTS.API_BASE}/api/scrape/test/youtube`, {
+             method: 'POST',
+             headers: {
+               'Content-Type': 'application/json',
+             },
+             body: JSON.stringify({ channelId }),
+           });
+           
+           const result = await response.json();
+           
+           if (result.success) {
+             console.log('测试抓取成功:', result);
+             alert(`测试抓取完成！获取到 ${result.data.contentCount} 条内容\n\n预览内容:\n${result.data.content.map((item: any) => `• ${item.title}`).join('\n')}`);
+           } else {
+             console.error('测试抓取失败:', result.error);
+             alert(`测试抓取失败: ${result.error}`);
+           }
+         } catch (error) {
+           console.error('测试YouTube抓取失败:', error);
+           alert(`测试抓取失败: ${error}`);
+         } finally {
+           setScraping(false);
+         }
+       };
+
+       // 测试微信公众号抓取
+       const handleTestWeChat = async () => {
+         const accountName = prompt('请输入微信公众号名称（如：机器之心）:');
+         if (!accountName) return;
+         
+         try {
+           setScraping(true);
+           console.log(`测试微信公众号抓取，公众号名称: ${accountName}`);
+           
+           const response = await fetch(`${API_ENDPOINTS.API_BASE}/api/scrape/test/wechat`, {
+             method: 'POST',
+             headers: {
+               'Content-Type': 'application/json',
+             },
+             body: JSON.stringify({ accountName }),
+           });
+           
+           const result = await response.json();
+           
+           if (result.success) {
+             console.log('测试抓取成功:', result);
+             alert(`测试抓取完成！获取到 ${result.data.contentCount} 条内容\n\n预览内容:\n${result.data.content.map((item: any) => `• ${item.title}`).join('\n')}`);
+           } else {
+             console.error('测试抓取失败:', result.error);
+             alert(`测试抓取失败: ${result.error}`);
+           }
+         } catch (error) {
+           console.error('测试微信公众号抓取失败:', error);
+           alert(`测试抓取失败: ${error}`);
+         } finally {
+           setScraping(false);
+         }
+       };
 
   // 标记为已读
   const markAsRead = async (id: number) => {
@@ -344,20 +378,27 @@ export const ContentPage: React.FC = () => {
             >
               {scraping ? '测试中...' : '测试Bilibili'}
             </Button>
-            <Button 
-              onClick={handleTestWeibo}
-              disabled={scraping}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              {scraping ? '测试中...' : '测试微博'}
-            </Button>
-            <Button 
-              onClick={handleTestWeChat}
-              disabled={scraping}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              {scraping ? '测试中...' : '测试微信'}
-            </Button>
+           <Button 
+             onClick={handleTestWeibo}
+             disabled={scraping}
+             className="bg-red-600 hover:bg-red-700"
+           >
+             {scraping ? '测试中...' : '测试微博'}
+           </Button>
+           <Button 
+             onClick={handleTestYouTube}
+             disabled={scraping}
+             className="bg-red-500 hover:bg-red-600"
+           >
+             {scraping ? '测试中...' : '测试YouTube'}
+           </Button>
+           <Button 
+             onClick={handleTestWeChat}
+             disabled={scraping}
+             className="bg-green-600 hover:bg-green-700"
+           >
+             {scraping ? '测试中...' : '测试微信'}
+           </Button>
             <Button 
               onClick={fetchContents}
               variant="secondary"

@@ -59,57 +59,21 @@ class BilibiliScraper extends BaseScraper {
         
         if (videos.length === 0) {
           console.log('⚠️ 该UP主暂无视频或视频不可见');
-          // 返回一些示例数据以便测试
-          return this.generateMockVideos(userId, limit);
+          return []; // 返回空数组，不生成模拟数据
         }
         
         return videos.map(video => this.formatVideo(video, userId));
       }
       
-      console.log('⚠️ API返回异常，使用模拟数据');
-      return this.generateMockVideos(userId, limit);
+      console.log('⚠️ API返回异常');
+      return []; // 返回空数组，不生成模拟数据
       
     } catch (error) {
       console.error('❌ 获取Bilibili视频失败:', error.message);
-      console.log('🔄 回退到模拟数据');
-      return this.generateMockVideos(userId, limit);
+      return []; // 返回空数组，不生成模拟数据
     }
   }
 
-  // 生成模拟视频数据（用于测试）
-  generateMockVideos(userId, limit) {
-    const mockVideos = [];
-    const videoTitles = [
-      'AI编程助手对比: GitHub Copilot vs Cursor',
-      'ChatGPT-4o新功能深度解析',
-      '大模型训练实战: 从零开始构建AI助手',
-      'AI数据分析: 用Python快速洞察数据',
-      '机器学习算法详解: 决策树与随机森林',
-      '深度学习框架对比: PyTorch vs TensorFlow',
-      'AI绘画工具评测: Midjourney vs Stable Diffusion',
-      '自然语言处理入门: BERT模型详解',
-      '计算机视觉应用: OpenCV实战教程',
-      'AI创业指南: 如何用AI技术变现'
-    ];
-
-    for (let i = 0; i < Math.min(limit, videoTitles.length); i++) {
-      const video = {
-        bvid: `BV${Math.random().toString(36).substr(2, 10)}`,
-        title: videoTitles[i],
-        description: `这是来自Bilibili UP主 ${userId} 的AI相关内容：${videoTitles[i]}`,
-        author: `UP主${userId}`,
-        created: Math.floor(Date.now() / 1000) - Math.random() * 86400 * 7, // 最近7天
-        length: Math.floor(Math.random() * 1800) + 300, // 5-35分钟
-        play: Math.floor(Math.random() * 50000) + 1000, // 播放量
-        video_review: Math.floor(Math.random() * 1000) + 50, // 点赞数
-        pic: `https://picsum.photos/320/180?random=${i}` // 随机图片
-      };
-      
-      mockVideos.push(this.formatVideo(video, userId));
-    }
-
-    return mockVideos;
-  }
 
   // 格式化视频数据
   formatVideo(video, userId) {
