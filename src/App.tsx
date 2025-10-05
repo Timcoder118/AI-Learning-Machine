@@ -1,9 +1,10 @@
-import { } from 'react';
+import React from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { Header } from './components/layout/Header';
 import { HomePage } from './pages/HomePage';
-import { CreatorsPage } from './pages/CreatorsPage';
-import { ContentPage } from './pages/ContentPage';
-import { RecommendationPage } from './pages/RecommendationPage';
+import CreatorsPage from './pages/CreatorsPage';
+import ContentPage from './pages/ContentPage';
+import RecommendationPage from './pages/RecommendationPage';
 
 /**
  * 主应用组件
@@ -12,13 +13,15 @@ import { RecommendationPage } from './pages/RecommendationPage';
 function App() {
   return (
     <div className="min-h-screen bg-gray-50">
+      <Header />
+      
       <main>
-             <Routes>
-               <Route path="/" element={<HomePage />} />
-               <Route path="/creators" element={<CreatorsPage />} />
-               <Route path="/content" element={<ContentPage />} />
-               <Route path="/recommendation" element={<RecommendationPage />} />
-             </Routes>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/creators" element={<CreatorsPage />} />
+          <Route path="/content" element={<ContentPage />} />
+          <Route path="/recommendation" element={<RecommendationPage />} />
+        </Routes>
       </main>
     </div>
   );
