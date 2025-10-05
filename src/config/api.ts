@@ -5,10 +5,15 @@
 
 // 获取API基础URL
 const getApiBaseUrl = (): string => {
-  // 在生产环境中，从环境变量获取API URL
+  // 优先使用环境变量中的API URL
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // 如果没有设置环境变量，根据环境选择默认值
   if (import.meta.env.PROD) {
-    // Vercel环境变量中的后端URL
-    return import.meta.env.VITE_API_URL || 'https://ai-knowledge-aggregator-backend.onrender.com';
+    // 生产环境默认后端URL
+    return 'https://ai-knowledge-aggregator-backend.onrender.com';
   }
   
   // 开发环境使用本地后端
@@ -16,6 +21,15 @@ const getApiBaseUrl = (): string => {
 };
 
 export const API_BASE_URL = getApiBaseUrl();
+
+// 调试信息
+console.log('🔧 API Configuration:', {
+  NODE_ENV: import.meta.env.MODE,
+  PROD: import.meta.env.PROD,
+  DEV: import.meta.env.DEV,
+  VITE_API_URL: import.meta.env.VITE_API_URL,
+  API_BASE_URL: API_BASE_URL
+});
 
 // API端点
 export const API_ENDPOINTS = {
