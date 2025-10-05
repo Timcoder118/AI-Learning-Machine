@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card } from '@/components/ui';
-import { Button } from '@/components/ui';
-import { API_ENDPOINTS } from '@/config/api';
+import { Card } from '../components/ui';
+import { Button } from '../components/ui';
+import { API_ENDPOINTS } from '../config/api';
 
 interface Content {
   id: number;
@@ -386,3 +386,5 @@ export const ContentPage: React.FC = () => {
     </div>
   );
 };
+
+export default ContentPage;
