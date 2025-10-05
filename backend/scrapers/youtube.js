@@ -49,37 +49,52 @@ class YouTubeScraper extends BaseScraper {
     try {
       const apiKey = process.env.YOUTUBE_API_KEY;
       if (!apiKey) {
-        throw new Error('YouTube API Key未配置');
+        console.error('❌ YouTube API Key未配置');
+        console.log('💡 请在环境变量中设置 YOUTUBE_API_KEY');
+        return [];
       }
 
+      console.log(`🔍 正在抓取YouTube频道 ${channelId} 的视频...`);
+      
       // 首先获取频道信息
       const channelUrl = `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${channelId}&key=${apiKey}`;
       const channelResponse = await this.request(channelUrl);
       
+      console.log(`📊 YouTube频道API响应:`, channelResponse.data);
+      
       if (!channelResponse.data.items || channelResponse.data.items.length === 0) {
-        throw new Error('频道不存在');
+        console.log('⚠️ 频道不存在或不可访问');
+        return [];
       }
 
       const uploadsPlaylistId = channelResponse.data.items[0].contentDetails.relatedPlaylists.uploads;
+      console.log(`📋 上传列表ID: ${uploadsPlaylistId}`);
       
       // 获取上传列表中的视频
       const videosUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploadsPlaylistId}&maxResults=${limit}&key=${apiKey}`;
       
-      console.log(`🔍 正在抓取YouTube频道 ${channelId} 的视频...`);
-      
       const response = await this.request(videosUrl);
+      
+      console.log(`📊 YouTube视频列表API响应:`, response.data);
       
       if (response.data.items && response.data.items.length > 0) {
         const videos = [];
         
+        console.log(`📹 找到 ${response.data.items.length} 个视频，开始获取详细信息...`);
+        
         // 获取每个视频的详细信息
         for (const item of response.data.items) {
           const videoId = item.snippet.resourceId.videoId;
+          console.log(`🔍 获取视频详情: ${videoId}`);
+          
           const videoDetails = await this.getVideoDetails(videoId);
           
           if (videoDetails) {
             videos.push(videoDetails);
           }
+          
+          // 添加延迟避免API限制
+          await new Promise(resolve => setTimeout(resolve, 100));
         }
         
         console.log(`✅ 成功获取 ${videos.length} 个视频`);
@@ -91,6 +106,21 @@ class YouTubeScraper extends BaseScraper {
       
     } catch (error) {
       console.error('❌ 获取YouTube视频失败:', error.message);
+      
+      // 处理API错误
+      if (error.response && error.response.data) {
+        const errorData = error.response.data;
+        if (errorData.error) {
+          console.error('API错误详情:', errorData.error);
+          
+          if (errorData.error.code === 403) {
+            console.log('💡 可能的原因: API配额不足或API Key无效');
+          } else if (errorData.error.code === 404) {
+            console.log('💡 频道不存在或已被删除');
+          }
+        }
+      }
+      
       return [];
     }
   }

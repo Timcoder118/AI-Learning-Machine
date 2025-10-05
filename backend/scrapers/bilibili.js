@@ -35,23 +35,52 @@ class BilibiliScraper extends BaseScraper {
   // 获取UP主最新视频
   async getUserVideos(userId, limit = 10) {
     try {
+      console.log(`🔍 正在抓取Bilibili UP主 ${userId} 的视频...`);
+      
+      // 添加随机延迟避免频率限制
+      await new Promise(resolve => setTimeout(resolve, Math.random() * 2000 + 1000));
+      
       // 使用Bilibili的公开API
       const url = `https://api.bilibili.com/x/space/arc/search?mid=${userId}&ps=${limit}&tid=0&pn=1&keyword=&order=pubdate&jsonp=jsonp`;
       
-      console.log(`🔍 正在抓取Bilibili UP主 ${userId} 的视频...`);
-      
       const response = await this.request(url, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-          'Referer': 'https://space.bilibili.com/',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Referer': `https://space.bilibili.com/${userId}`,
           'Accept': 'application/json, text/plain, */*',
           'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+          'Accept-Encoding': 'gzip, deflate, br',
+          'Connection': 'keep-alive',
           'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
+          'Pragma': 'no-cache',
+          'Origin': 'https://space.bilibili.com'
         }
       });
       
-      console.log('📊 Bilibili API响应:', JSON.stringify(response.data, null, 2));
+      console.log(`📊 Bilibili API响应码: ${response.data.code}, 消息: ${response.data.message}`);
+      
+      // 处理不同的错误码
+      if (response.data.code === -799) {
+        console.log('⚠️ 请求过于频繁，等待后重试...');
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        
+        // 添加重试计数器，避免无限递归
+        const retryCount = this.retryCount || 0;
+        if (retryCount >= 3) {
+          console.log('❌ 重试次数过多，放弃抓取');
+          return [];
+        }
+        
+        this.retryCount = retryCount + 1;
+        const result = await this.getUserVideos(userId, limit);
+        this.retryCount = 0; // 重置计数器
+        return result;
+      }
+      
+      if (response.data.code === -404) {
+        console.log('⚠️ UP主不存在或已被封禁');
+        return [];
+      }
       
       if (response.data.code === 0 && response.data.data && response.data.data.list) {
         const videos = response.data.data.list.vlist || [];
@@ -59,18 +88,40 @@ class BilibiliScraper extends BaseScraper {
         
         if (videos.length === 0) {
           console.log('⚠️ 该UP主暂无视频或视频不可见');
-          return []; // 返回空数组，不生成模拟数据
+          return [];
         }
         
-        return videos.map(video => this.formatVideo(video, userId));
+        // 验证视频链接有效性
+        const validVideos = [];
+        for (const video of videos) {
+          if (video.bvid && video.title) {
+            // 验证bvid格式
+            if (video.bvid.match(/^BV[a-zA-Z0-9]{10}$/)) {
+              validVideos.push(this.formatVideo(video, userId));
+            } else {
+              console.log(`⚠️ 无效的BV号: ${video.bvid}`);
+            }
+          }
+        }
+        
+        console.log(`✅ 有效视频数量: ${validVideos.length}`);
+        return validVideos;
       }
       
-      console.log('⚠️ API返回异常');
-      return []; // 返回空数组，不生成模拟数据
+      console.log(`⚠️ API返回异常，错误码: ${response.data.code}, 消息: ${response.data.message}`);
+      return [];
       
     } catch (error) {
       console.error('❌ 获取Bilibili视频失败:', error.message);
-      return []; // 返回空数组，不生成模拟数据
+      
+      // 如果是网络错误，尝试重试
+      if (error.code === 'ENOTFOUND' || error.code === 'ECONNRESET') {
+        console.log('🔄 网络错误，5秒后重试...');
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        return await this.getUserVideos(userId, limit);
+      }
+      
+      return [];
     }
   }
 
