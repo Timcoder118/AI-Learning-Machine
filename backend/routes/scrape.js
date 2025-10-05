@@ -473,6 +473,99 @@ router.get('/logs', async (req, res) => {
   }
 });
 
+// 测试Bilibili抓取
+router.post('/test/bilibili', async (req, res) => {
+  try {
+    const { userId } = req.body;
+    
+    if (!userId) {
+      return res.status(400).json({ success: false, error: '请提供UP主ID' });
+    }
+    
+    console.log(`🧪 测试Bilibili抓取，UP主ID: ${userId}`);
+    
+    const scraper = new BilibiliScraper();
+    const content = await scraper.getUserVideos(userId, 5);
+    
+    console.log(`✅ 测试抓取完成，获取到 ${content.length} 条内容`);
+    
+    res.json({ 
+      success: true, 
+      message: `测试抓取完成，获取到 ${content.length} 条内容`,
+      data: {
+        userId,
+        contentCount: content.length,
+        content: content.slice(0, 3) // 只返回前3条用于预览
+      }
+    });
+  } catch (error) {
+    console.error('测试Bilibili抓取失败:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 测试微博抓取
+router.post('/test/weibo', async (req, res) => {
+  try {
+    const { userId } = req.body;
+    
+    if (!userId) {
+      return res.status(400).json({ success: false, error: '请提供微博用户ID' });
+    }
+    
+    console.log(`🧪 测试微博抓取，用户ID: ${userId}`);
+    
+    const scraper = new WeiboScraper();
+    const content = await scraper.getUserPosts(userId, 5);
+    
+    console.log(`✅ 测试抓取完成，获取到 ${content.length} 条内容`);
+    
+    res.json({ 
+      success: true, 
+      message: `测试抓取完成，获取到 ${content.length} 条内容`,
+      data: {
+        userId,
+        contentCount: content.length,
+        content: content.slice(0, 3) // 只返回前3条用于预览
+      }
+    });
+  } catch (error) {
+    console.error('测试微博抓取失败:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 测试微信公众号抓取
+router.post('/test/wechat', async (req, res) => {
+  try {
+    const { accountName } = req.body;
+    
+    if (!accountName) {
+      return res.status(400).json({ success: false, error: '请提供公众号名称' });
+    }
+    
+    console.log(`🧪 测试微信公众号抓取，公众号名称: ${accountName}`);
+    
+    const scraper = new WeChatScraper();
+    const content = await scraper.getAccountArticles(accountName, 5);
+    
+    console.log(`✅ 测试抓取完成，获取到 ${content.length} 条内容`);
+    
+    res.json({ 
+      success: true, 
+      message: `测试抓取完成，获取到 ${content.length} 条内容`,
+      data: {
+        accountName,
+        contentCount: content.length,
+        content: content.slice(0, 3) // 只返回前3条用于预览
+      }
+    });
+  } catch (error) {
+    console.error('测试微信公众号抓取失败:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // 获取抓取统计
 router.get('/stats', async (req, res) => {
   try {

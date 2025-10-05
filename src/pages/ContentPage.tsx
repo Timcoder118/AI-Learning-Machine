@@ -122,6 +122,108 @@ export const ContentPage: React.FC = () => {
     }
   };
 
+  // 测试Bilibili抓取
+  const handleTestBilibili = async () => {
+    const userId = prompt('请输入Bilibili UP主ID（如：3493298436049525）:');
+    if (!userId) return;
+    
+    try {
+      setScraping(true);
+      console.log(`测试Bilibili抓取，UP主ID: ${userId}`);
+      
+      const response = await fetch(`${API_ENDPOINTS.API_BASE}/api/scrape/test/bilibili`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId }),
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        console.log('测试抓取成功:', result);
+        alert(`测试抓取完成！获取到 ${result.data.contentCount} 条内容\n\n预览内容:\n${result.data.content.map((item: any) => `• ${item.title}`).join('\n')}`);
+      } else {
+        console.error('测试抓取失败:', result.error);
+        alert(`测试抓取失败: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('测试Bilibili抓取失败:', error);
+      alert(`测试抓取失败: ${error}`);
+    } finally {
+      setScraping(false);
+    }
+  };
+
+  // 测试微博抓取
+  const handleTestWeibo = async () => {
+    const userId = prompt('请输入微博用户ID（如：1234567890）:');
+    if (!userId) return;
+    
+    try {
+      setScraping(true);
+      console.log(`测试微博抓取，用户ID: ${userId}`);
+      
+      const response = await fetch(`${API_ENDPOINTS.API_BASE}/api/scrape/test/weibo`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId }),
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        console.log('测试抓取成功:', result);
+        alert(`测试抓取完成！获取到 ${result.data.contentCount} 条内容\n\n预览内容:\n${result.data.content.map((item: any) => `• ${item.title}`).join('\n')}`);
+      } else {
+        console.error('测试抓取失败:', result.error);
+        alert(`测试抓取失败: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('测试微博抓取失败:', error);
+      alert(`测试抓取失败: ${error}`);
+    } finally {
+      setScraping(false);
+    }
+  };
+
+  // 测试微信公众号抓取
+  const handleTestWeChat = async () => {
+    const accountName = prompt('请输入微信公众号名称（如：机器之心）:');
+    if (!accountName) return;
+    
+    try {
+      setScraping(true);
+      console.log(`测试微信公众号抓取，公众号名称: ${accountName}`);
+      
+      const response = await fetch(`${API_ENDPOINTS.API_BASE}/api/scrape/test/wechat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ accountName }),
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        console.log('测试抓取成功:', result);
+        alert(`测试抓取完成！获取到 ${result.data.contentCount} 条内容\n\n预览内容:\n${result.data.content.map((item: any) => `• ${item.title}`).join('\n')}`);
+      } else {
+        console.error('测试抓取失败:', result.error);
+        alert(`测试抓取失败: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('测试微信公众号抓取失败:', error);
+      alert(`测试抓取失败: ${error}`);
+    } finally {
+      setScraping(false);
+    }
+  };
+
   // 标记为已读
   const markAsRead = async (id: number) => {
     try {
@@ -227,13 +329,34 @@ export const ContentPage: React.FC = () => {
             <h1 className="text-3xl font-bold text-gray-900">内容聚合</h1>
             <p className="text-gray-600 mt-2">查看和管理抓取的内容</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2 flex-wrap">
             <Button 
               onClick={triggerScraping}
               disabled={scraping}
               className="bg-primary-600 hover:bg-primary-700"
             >
               {scraping ? '抓取中...' : '手动抓取'}
+            </Button>
+            <Button 
+              onClick={handleTestBilibili}
+              disabled={scraping}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {scraping ? '测试中...' : '测试Bilibili'}
+            </Button>
+            <Button 
+              onClick={handleTestWeibo}
+              disabled={scraping}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {scraping ? '测试中...' : '测试微博'}
+            </Button>
+            <Button 
+              onClick={handleTestWeChat}
+              disabled={scraping}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {scraping ? '测试中...' : '测试微信'}
             </Button>
             <Button 
               onClick={fetchContents}
