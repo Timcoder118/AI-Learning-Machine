@@ -34,6 +34,14 @@ export const CreatorsPage: React.FC = () => {
     description: '',
     tags: ''
   });
+  const [editingCreator, setEditingCreator] = useState<Creator | null>(null);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    platform: 'bilibili',
+    platform_id: '',
+    description: '',
+    tags: ''
+  });
 
   // 获取博主列表
   const fetchCreators = async () => {
@@ -117,40 +125,126 @@ export const CreatorsPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:3001/api/creators/${id}`, {
+      console.log('正在删除博主，ID:', id);
+      const response = await fetch(`${API_ENDPOINTS.CREATORS}/${id}`, {
         method: 'DELETE',
       });
 
+      console.log('删除响应状态:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
+      console.log('删除响应数据:', data);
+      
       if (data.success) {
         alert('删除博主成功！');
-        fetchCreators();
+        await fetchCreators();
       } else {
         alert(`删除失败: ${data.error}`);
       }
     } catch (error) {
       console.error('删除博主失败:', error);
-      alert('删除博主失败');
+      alert('删除博主失败: ' + (error as Error).message);
     }
   };
 
   // 切换激活状态
   const toggleActive = async (id: number) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/creators/${id}/toggle-active`, {
+      console.log('正在切换博主状态，ID:', id);
+      const response = await fetch(`${API_ENDPOINTS.CREATORS}/${id}/toggle-active`, {
         method: 'PATCH',
       });
 
+      console.log('切换状态响应:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
+      console.log('切换状态响应数据:', data);
+      
       if (data.success) {
-        fetchCreators();
+        alert('状态更新成功！');
+        await fetchCreators();
       } else {
         alert(`操作失败: ${data.error}`);
       }
     } catch (error) {
       console.error('切换状态失败:', error);
-      alert('操作失败');
+      alert('操作失败: ' + (error as Error).message);
     }
+  };
+
+  // 编辑博主
+  const editCreator = (creator: Creator) => {
+    setEditingCreator(creator);
+    setEditForm({
+      name: creator.name,
+      platform: creator.platform,
+      platform_id: creator.platform_id,
+      description: creator.description || '',
+      tags: creator.tags || ''
+    });
+  };
+
+  // 保存编辑
+  const saveEdit = async () => {
+    if (!editingCreator || !editForm.name || !editForm.platform_id) {
+      alert('请填写博主名称和平台ID');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      console.log('正在更新博主:', editForm);
+      
+      const response = await fetch(`${API_ENDPOINTS.CREATORS}/${editingCreator.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editForm),
+      });
+
+      console.log('更新响应状态:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('更新响应数据:', data);
+      
+      if (data.success) {
+        alert('更新博主成功！');
+        setEditingCreator(null);
+        await fetchCreators();
+      } else {
+        alert(`更新失败: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('更新博主失败:', error);
+      alert('更新博主失败: ' + (error as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 取消编辑
+  const cancelEdit = () => {
+    setEditingCreator(null);
+    setEditForm({
+      name: '',
+      platform: 'bilibili',
+      platform_id: '',
+      description: '',
+      tags: ''
+    });
   };
 
   useEffect(() => {
@@ -283,6 +377,83 @@ export const CreatorsPage: React.FC = () => {
         </Card>
       )}
 
+      {/* 编辑博主表单 */}
+      {editingCreator && (
+        <Card className="p-6 mb-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">编辑博主信息</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">博主名称</label>
+              <Input
+                value={editForm.name}
+                onChange={(value) => setEditForm({ ...editForm, name: value })}
+                placeholder="请输入博主名称"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">平台</label>
+              <select
+                value={editForm.platform}
+                onChange={(e) => setEditForm({ ...editForm, platform: e.target.value })}
+                className="input"
+              >
+                <option value="bilibili">Bilibili</option>
+                <option value="youtube">YouTube</option>
+                <option value="weibo">微博</option>
+                <option value="wechat">微信公众号</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">平台ID</label>
+              <Input
+                value={editForm.platform_id}
+                onChange={(value) => setEditForm({ ...editForm, platform_id: value })}
+                placeholder="请输入平台ID"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {editForm.platform === 'bilibili' && 'Bilibili UP主ID，如：15627787'}
+                {editForm.platform === 'youtube' && 'YouTube频道ID，如：UCXZCJLdBC09xxGZ6gcdrc6A'}
+                {editForm.platform === 'weibo' && '微博用户ID，如：1234567890'}
+                {editForm.platform === 'wechat' && '微信公众号名称，如：机器之心'}
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">标签</label>
+              <Input
+                value={editForm.tags}
+                onChange={(value) => setEditForm({ ...editForm, tags: value })}
+                placeholder="用逗号分隔，如：AI,机器学习,深度学习"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">描述</label>
+              <textarea
+                value={editForm.description}
+                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                placeholder="请输入博主描述"
+                className="input"
+                rows={3}
+              />
+            </div>
+          </div>
+          <div className="flex gap-3 mt-4">
+            <Button 
+              onClick={saveEdit}
+              disabled={loading}
+              className="bg-primary-600 hover:bg-primary-700"
+            >
+              {loading ? '保存中...' : '保存修改'}
+            </Button>
+            <Button 
+              onClick={cancelEdit}
+              variant="secondary"
+            >
+              取消
+            </Button>
+          </div>
+        </Card>
+      )}
+
       {/* 博主列表 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {creators.map((creator) => (
@@ -319,6 +490,14 @@ export const CreatorsPage: React.FC = () => {
             </div>
 
             <div className="flex gap-2">
+              <Button
+                onClick={() => editCreator(creator)}
+                variant="ghost"
+                size="sm"
+                className="text-blue-600 hover:text-blue-700"
+              >
+                修改
+              </Button>
               <Button
                 onClick={() => toggleActive(creator.id)}
                 variant={creator.is_active ? "secondary" : "primary"}

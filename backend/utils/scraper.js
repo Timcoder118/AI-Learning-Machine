@@ -43,6 +43,17 @@ class BaseScraper {
     throw lastError;
   }
 
+  // 使用Cheerio抓取HTML内容
+  async scrape(url, options = {}) {
+    try {
+      const response = await this.request(url, options);
+      return cheerio.load(response.data);
+    } catch (error) {
+      console.error('抓取失败:', error.message);
+      throw error;
+    }
+  }
+
   // 使用Puppeteer抓取动态内容 - 已移除Puppeteer依赖
   async scrapeWithPuppeteer(url, options = {}) {
     // 临时使用普通HTTP请求代替Puppeteer
